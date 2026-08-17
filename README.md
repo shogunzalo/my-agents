@@ -1,0 +1,81 @@
+# my-agents
+
+Gonzalo's personal roster of Claude Code subagents, plus the workflow that wires
+them into a development lifecycle. These are the definitions that live in
+`~/.claude/agents/` (user scope — available in **every** project on this machine).
+
+This repo is the source of truth; `install.sh` syncs it into `~/.claude/agents/`.
+
+## The roster
+
+| Agent | Role in the lifecycle | Model | Writes code? |
+|-------|----------------------|-------|--------------|
+| **software-architect** | Plans & designs before code exists. Produces developer-ready specs with a mandatory Big-O complexity audit, testing strategy, and CI plan. | opus | ❌ never |
+| **senior-dev** | Implements features, refactors, and bug fixes in the house TypeScript/Next/Node style (Synta as the reference exemplar). | (inherits) | ✅ |
+| **unit-tester** | Authors tests in the fleet's toolchains — Vitest+coverage+BDD+Stryker for TS, pytest/uv for Python, `cargo test` for Rust. | sonnet | ✅ (tests) |
+| **code-reviewer** | Read-only review of a diff/branch: correctness bugs first, then secrets/security, house-convention violations, SOLID/complexity. Verifies by running typecheck/tests. | opus | ❌ reports only |
+
+They form a pipeline: **architect → senior-dev → unit-tester → code-reviewer**.
+See [WORKFLOW.md](./WORKFLOW.md) for how to run a feature through it end-to-end.
+
+## House context baked into every agent
+
+These agents were tuned against the real conventions of ~40 projects on this machine,
+so you don't have to restate them each time:
+
+- **Stack:** Next.js App Router + React 19 + TS strict + Tailwind + shadcn (front);
+  Express 5 / Fastify + Prisma/Drizzle over PostgreSQL (back); Expo/React Native
+  (mobile); Python on **uv** (ruff, pytest); Rust/cargo for product-like experiments.
+- **Package managers:** **npm** (never yarn/pnpm) for JS, **uv** for Python, cargo for Rust.
+- **Quality gate:** `npx tsc --noEmit` is the universal minimum. The gold standard
+  (Synta) is typecheck → coverage ≥95% → Cucumber BDD (Spanish) → API integration →
+  Stryker mutation ≥85%.
+- **Deploy:** GitHub Actions → Google Cloud Run (GCP `link-binder`, `southamerica-west1`),
+  Docker → Artifact Registry, WIF auth, Cloud SQL Proxy for migrations. Static → Firebase.
+- **Copy:** client-facing UI/LLM text in neutral Spanish (Argentina), *usted*, never voseo.
+- **Git:** never push / force-push / open PRs unless explicitly asked. Never commit secrets.
+
+## Install
+
+```bash
+./install.sh            # copies agents/*.md into ~/.claude/agents/
+./install.sh --symlink  # symlinks instead, so edits here take effect live
+./install.sh --dry-run  # show what would change, do nothing
+```
+
+After installing, the agents are available in any Claude Code session on this machine.
+
+## Use them
+
+In any Claude Code session:
+
+- **Explicitly:** `@software-architect design the auth flow for trip-planner`, or
+  `@code-reviewer review my working diff`.
+- **Automatically:** Claude routes work to them based on their `description` — ask
+  "plan and build feature X" and it will pull in the architect, then senior-dev, etc.
+- **In parallel:** launch several at once for independent work (e.g. review + write
+  tests for two different modules).
+
+Each agent's behavior is defined entirely by its Markdown file in `agents/`. Edit the
+file, re-run `install.sh` (or use `--symlink` once), and the change is live.
+
+## Editing an agent
+
+Agent files are Markdown with YAML frontmatter:
+
+```markdown
+---
+name: my-agent            # the @handle
+description: >-           # when Claude should reach for it (routing signal)
+  One or two sentences...
+tools: ["*"]              # or an explicit allow-list; omit to inherit all
+model: opus               # optional: opus | sonnet | haiku, else inherits
+memory: user              # optional: gives it a persistent ~/.claude/agent-memory dir
+---
+
+System prompt goes here — this is the agent's identity and instructions.
+```
+
+Keep the `description` sharp: it's the signal Claude uses to decide when to delegate.
+Keep the body dense and specific to how *you* work — that's what makes these better
+than a generic assistant.
