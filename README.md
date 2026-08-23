@@ -14,9 +14,11 @@ This repo is the source of truth; `install.sh` syncs it into `~/.claude/agents/`
 | **senior-dev** | Implements features, refactors, and bug fixes in the house TypeScript/Next/Node style (Synta as the reference exemplar). | (inherits) | ✅ |
 | **unit-tester** | Authors tests in the fleet's toolchains — Vitest+coverage+BDD+Stryker for TS, pytest/uv for Python, `cargo test` for Rust. | sonnet | ✅ (tests) |
 | **code-reviewer** | Read-only review of a diff/branch: correctness bugs first, then secrets/security, house-convention violations, SOLID/complexity. Verifies by running typecheck/tests. | opus | ❌ reports only |
+| **seo-geo** | Standalone specialist (outside the pipeline): audits & improves both **SEO** (organic search) and **GEO** (getting cited by ChatGPT/Claude/Gemini/Perplexity) — intent titles + metadata, JSON-LD, sitemaps + indexing (Search Console/IndexNow), OG images, llms.txt, AI-crawler access. Checks the live site, then implements. | opus | ✅ |
 
-They form a pipeline: **architect → senior-dev → unit-tester → code-reviewer**.
-See [WORKFLOW.md](./WORKFLOW.md) for how to run a feature through it end-to-end.
+The first four form a pipeline: **architect → senior-dev → unit-tester → code-reviewer**.
+**seo-geo** is a standalone specialist you invoke to audit or grow a site's search/AI visibility.
+See [WORKFLOW.md](./WORKFLOW.md) for how to run a feature through the pipeline end-to-end.
 
 ## House context baked into every agent
 
