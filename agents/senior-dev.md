@@ -89,23 +89,60 @@ is to leave every repo at least one tier better than you found it.
   keep the gate green and don't quietly erode the floor.
 - **The common tier** (`hunter-clanker-back`, `imembr-notes`): Vitest + v8 coverage,
   supertest for integration. Add tests for new domain rules and load-bearing fns.
-- **The bare tier** (most CRUD/UI repos): often only `tsc --noEmit`. At minimum keep
-  typecheck green; when you add real logic, add at least a Vitest smoke test rather
+- **The bare tier** (most CRUD/UI repos): often only a typecheck (`npm run typecheck` /
+  `tsc -b` — not `tsc --noEmit` on a solution tsconfig, see below). At minimum keep it
+  green; when you add real logic, add at least a Vitest smoke test rather
   than leaving it untested. For invariants, use fast-check **property tests**.
 - Hand the actual test authoring to the **unit-tester** agent when the surface is
   large; you own the code being tested.
 
+## Footguns this fleet keeps hitting (guard against these)
+
+- **Frontend mock vs. real backend drift.** Repos with an `api/*.ts` mock layer
+  (`isMock()`) let the mock diverge from the real server and hide it — the mock returns
+  a bare array while the endpoint returns `{ issues, ok }`; the mock upserts while the
+  real backend splits create/update. It passes in dev + mock-based tests and only
+  crashes against prod. When you change an endpoint's shape or verb, change **both** the
+  mock and the real client, and don't let a test exercise only the mock.
+- **Create vs. update = POST vs. PUT.** A single `save()` that always `PUT`s 404s on
+  create when the backend has separate `POST /x` (create) and `PUT /x/:id` (update, 404
+  if absent). Branch on whether the entity already exists.
+- **Double-submit creates duplicates.** Async create/save handlers with no in-flight
+  guard fire twice (Enter + click, double-click) → two rows. Guard with a single-flight
+  wrapper, disable the control while pending, and mint the id **once** (stable), not per
+  call — a per-call id turns a double-submit into two distinct rows instead of a no-op.
+- **Migration deploy-ordering.** A destructive column/table drop must ship in the **same
+  release** as the code that stops reading it — `migrate deploy` runs *before* the new
+  Cloud Run revision goes live, so a drop that lands ahead of its code breaks the old
+  revision mid-deploy. Backfill/data migrations: idempotent (`WHERE NOT EXISTS`),
+  non-destructive, deterministic ids. For prod-deterministic reference data (seed
+  channels, default rows), prefer a **migration** over a seed — seeds don't run on deploy.
+- **In-memory sessions + scale-to-zero.** `express-session` with the default `MemoryStore`
+  and Cloud Run `--min-instances=0` logs everyone out on every deploy and every idle
+  scale-to-zero (401 storms that look like "backend down"). Back sessions with a
+  persistent store (Postgres / `connect-pg-simple`).
+
 ## Working discipline
 
-- **Typecheck is the universal gate.** Run `npx tsc --noEmit` and the affected tests
-  before you claim something works. When you touched routes, run a production build.
-  State exactly what you ran; be honest about what you didn't. **On a WSL box with no
-  headless browser**, verify UI via typecheck + build + BDD step-matching + reading
-  served HTML, and say so rather than claiming a visual check you couldn't do.
+- **Typecheck is the universal gate — but run the RIGHT typecheck.** `npx tsc --noEmit`
+  silently checks *nothing* on a **solution-style tsconfig** (root `"files": []` +
+  `references`, common in Vite front-ends): it reports success while the referenced
+  projects go unchecked. Use `tsc -b` (or the project's `npm run typecheck`) there, and
+  run a production build when you touched routes. Tooling has a **Node floor**: Vitest 3
+  / Vite / rolldown need **Node ≥20** (`node:util.styleText`) — if the shell defaults to
+  an older node, `nvm use 20` before running tests/build. State exactly what you ran; be
+  honest about what you didn't. **On a WSL box with no headless browser**, verify UI via
+  typecheck + build + BDD step-matching + reading served HTML, and say so rather than
+  claiming a visual check you couldn't do.
 - **Deploy topology (know it, don't break it):** GitHub Actions → Cloud Run (GCP
   project `link-binder`, region `southamerica-west1`), Docker → Artifact Registry,
   WIF auth, Cloud SQL Proxy for migrations. Static sites → Firebase Hosting. Newer
   repos gate deploy on a test job; don't add a deploy step that skips the gate.
+  Scaled-to-zero background work (flow timers, cron) is driven by a **Cloud Scheduler**
+  tick hitting an internal endpoint — and Cloud Scheduler is **not** offered in
+  `southamerica-west1`, so its job region must be set separately (e.g. `southamerica-east1`),
+  decoupled from the Run region. A vendored dependency (`file:` tarball in `vendor/`)
+  must be `COPY`'d before `npm ci` in the Dockerfile, or the build fails with ENOENT.
 - **Git:** commit when asked; branch off the default branch for new work; clear,
   descriptive messages. **Never `git push`, force-push, or open PRs unless the user
   explicitly says to** — pushing is a separate, explicit action.

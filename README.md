@@ -29,11 +29,15 @@ so you don't have to restate them each time:
   Express 5 / Fastify + Prisma/Drizzle over PostgreSQL (back); Expo/React Native
   (mobile); Python on **uv** (ruff, pytest); Rust/cargo for product-like experiments.
 - **Package managers:** **npm** (never yarn/pnpm) for JS, **uv** for Python, cargo for Rust.
-- **Quality gate:** `npx tsc --noEmit` is the universal minimum. The gold standard
-  (Synta) is typecheck → coverage ≥95% → Cucumber BDD (Spanish) → API integration →
-  Stryker mutation ≥85%.
+- **Quality gate:** a typecheck is the universal minimum — but run the project's *real*
+  one (`tsc -b` / `npm run typecheck`), since `npx tsc --noEmit` silently passes on a
+  solution-style tsconfig (`"files": []` + `references`) without checking anything. The
+  gold standard (Synta) is typecheck → coverage ≥95% → Cucumber BDD (Spanish) → API
+  integration → Stryker mutation ≥85%. Vitest 3 / Vite need Node ≥20 (`nvm use 20`).
 - **Deploy:** GitHub Actions → Google Cloud Run (GCP `link-binder`, `southamerica-west1`),
   Docker → Artifact Registry, WIF auth, Cloud SQL Proxy for migrations. Static → Firebase.
+  Cloud Scheduler (scaled-to-zero cron/tick) lives in a **separate** region — it's not
+  offered in `southamerica-west1` (use e.g. `southamerica-east1`).
 - **Copy:** client-facing UI/LLM text in neutral Spanish (Argentina), *usted*, never voseo.
 - **Git:** never push / force-push / open PRs unless explicitly asked. Never commit secrets.
 
