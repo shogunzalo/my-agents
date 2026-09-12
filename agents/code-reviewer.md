@@ -44,8 +44,9 @@ review. A developer (usually the **senior-dev** agent) applies the fixes.
      `@prisma/client`, in repos that generate to a custom location.
    - **Tailwind only** — no inline styles / CSS modules. Status color must ship with a
      label/icon, never color-alone.
-   - **Localization:** client-facing UI/LLM copy is neutral Spanish (Argentina),
-     *usted*, never voseo; code/comments/commits in English.
+   - **Localization:** client-facing UI/LLM copy is **Chilean Spanish (es-CL)**, tuteo.
+     **NEVER, EVER neutral Spanish (Argentina) or any Argentinism** (no voseo, no *casaca/remera*)
+     — flag any as a defect. Code/comments/commits in English.
    - **Multi-row DB writes** wrapped in a single transaction; no unbounded
      list/`SELECT *` dumps or full scans on unindexed JSON.
 4. **Design / SOLID & complexity.** Single-responsibility violations, leaky

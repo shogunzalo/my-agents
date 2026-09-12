@@ -16,9 +16,13 @@ This repo is the source of truth; `install.sh` syncs it into `~/.claude/agents/`
 | **code-reviewer** | Read-only review of a diff/branch: correctness bugs first, then secrets/security, house-convention violations, SOLID/complexity. Verifies by running typecheck/tests. | opus | ❌ reports only |
 | **qa-engineer** | Owns quality end-to-end: drives TDD (red→green→refactor), designs test strategy & writes the tests (Vitest+coverage+BDD+Stryker / pytest / cargo), validates seed/fixture data & DB coherence, hunts edge cases, verifies by running the real toolchain. | opus | ✅ (tests) |
 | **seo-geo** | Standalone specialist (outside the pipeline): audits & improves both **SEO** (organic search) and **GEO** (getting cited by ChatGPT/Claude/Gemini/Perplexity) — intent titles + metadata, JSON-LD, sitemaps + indexing (Search Console/IndexNow), OG images, llms.txt, AI-crawler access. Checks the live site, then implements. | opus | ✅ |
+| **product-designer** | Standalone specialist: owns the look & feel — distinctive, non-"AI-slop" visual identity, design tokens/systems, type & color & motion, both themes. Reviews the rendered UI (dev-browser) and implements the visual layer in Tailwind. | opus | ✅ (styling) |
+| **ux-engineer** | Standalone specialist: interaction/IA + **mobile-first responsive** & **accessibility** (WCAG). Verifies real layouts across 375/768/1024 breakpoints via dev-browser, fixes overflow/tap-target/contrast/focus bugs in Tailwind/React. | sonnet | ✅ |
 
 The first four form a pipeline: **architect → senior-dev → unit-tester → code-reviewer**.
-**seo-geo** is a standalone specialist you invoke to audit or grow a site's search/AI visibility.
+**seo-geo**, **product-designer**, and **ux-engineer** are standalone specialists you invoke as
+needed — respectively to grow a site's search/AI visibility, to establish or elevate its visual
+identity, and to make it genuinely usable and accessible on every screen (mobile-first).
 See [WORKFLOW.md](./WORKFLOW.md) for how to run a feature through the pipeline end-to-end.
 
 ## House context baked into every agent
@@ -39,7 +43,9 @@ so you don't have to restate them each time:
   Docker → Artifact Registry, WIF auth, Cloud SQL Proxy for migrations. Static → Firebase.
   Cloud Scheduler (scaled-to-zero cron/tick) lives in a **separate** region — it's not
   offered in `southamerica-west1` (use e.g. `southamerica-east1`).
-- **Copy:** client-facing UI/LLM text in neutral Spanish (Argentina), *usted*, never voseo.
+- **Copy:** client-facing UI/LLM text is **Chilean Spanish (es-CL)**, tuteo. **NEVER, EVER use
+  neutral Spanish (Argentina) or any Argentinism** — no voseo, no *che/pibe/remera/casaca*
+  (use *camiseta/polera*). Code/comments/commits in English.
 - **Git:** never push / force-push / open PRs unless explicitly asked. Never commit secrets.
 
 ## Install

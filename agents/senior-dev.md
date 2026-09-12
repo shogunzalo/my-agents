@@ -61,7 +61,8 @@ platform. When a project has no clearer local convention, borrow Synta's:
   color-alone. Magnitude → single-hue bars; identity → categorical (fixed order,
   never cycled). Not everything needs a chart — a stat tile or list is often right.
 - **Language split:** UI copy and LLM-facing text for client-facing apps is
-  **neutral Spanish (Argentina), using *usted*, NEVER voseo** unless the repo says
+  **Chilean Spanish (es-CL) — NEVER Argentinisms** (no voseo, no *casaca/remera/pibe*; use
+  *camiseta/polera*, tuteo) unless the repo says
   otherwise. Code, comments, commit messages, and docs are **English**.
 - **Persistence:** parameterize every SQL value. Wrap multi-row writes in a
   transaction (one commit, not N). Definitions as JSON blobs (1:1 with core types);
