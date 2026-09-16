@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# Pre-commit secret scanner. Blocks a commit if staged changes look like they
+# contain a credential. Zero dependencies (pure bash + git + grep); if `gitleaks`
+# is installed it is used as an additional, stronger pass.
+#
+# Enable in a clone (once):  git config core.hooksPath hooks
+# Bypass in an emergency:     git commit --no-verify   (avoid; you own the risk)
+# Allowlist a known-safe line: add a trailing comment  pragma: allowlist secret
+set -euo pipefail
+
+RED=$'\033[31m'; YEL=$'\033[33m'; DIM=$'\033[2m'; RST=$'\033[0m'
+HOOK_REL="hooks/pre-commit"   # this script scans staged content, incl. patterns; skip itself
+fail=0
+
+# Files staged for add/copy/modify (not deletions), NUL-safe.
+mapfile -d '' -t staged < <(git diff --cached --name-only --diff-filter=ACM -z)
+[ ${#staged[@]} -eq 0 ] && exit 0
+
+note() { printf '%s%s%s\n' "$RED" "$1" "$RST" >&2; }
+
+# --- 1. Block committing real dotenv files (allow example/sample/template) --------
+for f in "${staged[@]}"; do
+  base="$(basename "$f")"
+  case "$base" in
+    .env|.env.*)
+      case "$base" in
+        .env.example|.env.sample|.env.template|.env.dist) ;;
+        *) note "blocked: refusing to commit env file  $f"; fail=1 ;;
+      esac ;;
+  esac
+done
+
+# --- 2. High-signal credential patterns (name -> ERE) ----------------------------
+# These match real credential formats, so they don't false-positive on prose.
+names=(
+  "Private key block"
+  "AWS access key id"
+  "GitHub token"
+  "GitHub fine-grained PAT"
+  "Slack token"
+  "Google API key"
+  "Stripe live key"
+  "Anthropic API key"
+  "OpenAI project key"
+  "Telegram bot token"
+  "Google service-account key"
+  "Generic assigned secret"
+)
+pats=(
+  '-----BEGIN [A-Z ]*PRIVATE KEY-----'
+  'AKIA[0-9A-Z]{16}'
+  'gh[posru]_[0-9A-Za-z]{36,}'
+  'github_pat_[0-9A-Za-z_]{22,}'
+  'xox[baprs]-[0-9A-Za-z-]{10,}'
+  'AIza[0-9A-Za-z_-]{35}'
+  '(sk|rk)_live_[0-9A-Za-z]{24,}'
+  'sk-ant-[0-9A-Za-z-]{20,}'
+  'sk-proj-[0-9A-Za-z_-]{20,}'
+  '[0-9]{8,10}:[A-Za-z0-9_-]{35}'
+  '"private_key"[[:space:]]*:[[:space:]]*"-----BEGIN'
+  '(password|passwd|secret|token|api[_-]?key|access[_-]?key|client[_-]?secret)[[:space:]]*[:=][[:space:]]*['"'"'"][^'"'"'"[:space:]]{12,}['"'"'"]'
+)
+# Placeholders that are obviously not real secrets (skip the generic check on these).
+placeholder='(xxx|placeholder|example|redacted|changeme|your[-_]|<[^>]+>|\*\*\*|dummy|sample|test[-_]?(key|token|secret)|\$\{)'
+
+for f in "${staged[@]}"; do
+  [ "$f" = "$HOOK_REL" ] && continue          # don't scan this script's own patterns
+  git show ":$f" 2>/dev/null | grep -qI . || continue   # skip binary files
+  content="$(git show ":$f" 2>/dev/null)"
+  for i in "${!pats[@]}"; do
+    while IFS=: read -r lineno line; do
+      [ -z "${lineno:-}" ] && continue
+      printf '%s' "$line" | grep -qiE 'pragma: allowlist secret|gitleaks:allow' && continue
+      # For the generic (last) pattern only, ignore obvious placeholders.
+      if [ "$i" -eq $(( ${#pats[@]} - 1 )) ]; then
+        printf '%s' "$line" | grep -qiE "$placeholder" && continue
+      fi
+      note "blocked: possible ${names[$i]}  $f:$lineno"
+      printf '%s        %s%s\n' "$DIM" "$(printf '%s' "$line" | sed -E 's/^[[:space:]]+//' | cut -c1-100)" "$RST" >&2
+      fail=1
+    done < <(printf '%s\n' "$content" | grep -niE -e "${pats[$i]}" || true)
+  done
+done
+
+# --- 3. Optional stronger pass with gitleaks, if available -----------------------
+if command -v gitleaks >/dev/null 2>&1; then
+  if ! gitleaks protect --staged --redact --no-banner >/dev/null 2>&1; then
+    note "blocked: gitleaks flagged staged changes  (run: gitleaks protect --staged --verbose)"
+    fail=1
+  fi
+fi
+
+if [ "$fail" -ne 0 ]; then
+  printf '\n%spre-commit: secret scan failed. Remove the secret (use an env var / secret manager)%s\n' "$YEL" "$RST" >&2
+  printf '%sthen re-commit. A confirmed false positive can be marked with a trailing%s\n' "$YEL" "$RST" >&2
+  printf '%s"pragma: allowlist secret" comment. Do not use --no-verify to bypass a real one.%s\n' "$YEL" "$RST" >&2
+  exit 1
+fi
+exit 0
