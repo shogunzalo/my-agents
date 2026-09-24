@@ -12,13 +12,31 @@ of TDD here is not ceremony — it's forcing small, deliberate steps so the code
 structured instead of vibe-coded, and so tests prove the behavior the user actually
 invokes.
 
+**TDD is a tool, not the default.** The default for non-trivial work is design up front
+→ implement → test, with mutation testing as the regression signal (see
+[testing.md](../../../standards/testing.md)). Run the full loop when it *earns its
+place* — the cases below — because an agent running it unsupervised costs several times
+the tokens for no clear quality edge, and drifts into the failure modes in
+[agent-guardrails.md](../../../standards/agent-guardrails.md). A human should read *why*
+each red went red — that is the only thing the red proves.
+
 ## When to use
 
-- Building a new feature or fixing a bug where you can express "done" as a test.
+- Fixing a bug: write the failing test that reproduces it **first**, then fix — so the
+  regression is pinned.
+- Tricky pure logic or a contract you can state crisply as a test up front.
 - Any interaction/UI feature — write the test for the **real user action**, not just
   the leaf helper.
 - The user says "TDD", "test-first", "red-green-refactor", or "write the failing test
   first".
+
+## When NOT to use
+
+- Broad new features where the design isn't settled — design up front first
+  (`software-architect`), then implement, then test. Emergent TDD design has not shown
+  a quality edge in the agent loop.
+- As a reflex on every change, or to hit a coverage number. That's ceremony and token
+  burn, not confidence.
 
 ## Workflow
 
@@ -54,11 +72,19 @@ function that was easy to test.
   --noEmit` on a solution-style tsconfig checks nothing; use `tsc -b` /
   `npm run typecheck`. See [standards/environment.md](../../../standards/environment.md).
 
-## Anti-patterns
+## Anti-patterns (the [guardrails](../../../standards/agent-guardrails.md), in short)
 
+- **Faking the red** — skipping the failing run, or implementing ahead of the test so
+  it passes on the first execution. A red you never watched proves nothing.
+- **Overshooting the test** — building more than the current test demands because the
+  whole requirement is in context.
+- **Tautological / self-verifying tests** — expected value produced by the code under
+  test, or asserting a mock echoed what you told it to return.
+- **Weaken-to-green** — loosening an assertion/tolerance, or `skip`/`only`/deleting a
+  failing test, to make it pass. Fix the code, or change the test deliberately with a
+  reason.
 - Testing internals / implementation details → tests break on refactor and prove
   nothing about behavior.
-- Tautological tests (assert the mock returned what you told it to).
 - Testing only the pure helper and shipping the untested integration → the bug
   reaches prod.
 - Writing the test *after* the code and calling it TDD.

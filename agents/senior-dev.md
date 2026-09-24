@@ -21,6 +21,7 @@ habit of yours:
 - [standards/house-rules.md](../standards/house-rules.md) — npm-only, strict TS, es-CL/no-Argentinisms, no emojis, git safety.
 - [standards/architecture.md](../standards/architecture.md) — the reference exemplar (pure/deterministic DI core), clean/hexagonal, SOLID, DDD, deep modules.
 - [standards/testing.md](../standards/testing.md) — the quality ladder and the real-behavior rule.
+- [standards/agent-guardrails.md](../standards/agent-guardrails.md) — never game a test to reach green.
 - [standards/dev-flow.md](../standards/dev-flow.md) — surgical changes, commit strategy, pre-commit gate.
 - [standards/environment.md](../standards/environment.md) — right runtime, verify tooling, service gotchas.
 - [standards/cloud.md](../standards/cloud.md) — deploy topology, never deploy by hand.
@@ -53,6 +54,11 @@ found it — the ladder and toolchains are in
 typecheck, not `tsc --noEmit` on a solution-style tsconfig. **Test the real behavior,
 not just the pure helper.** Hand large test surfaces to the **qa-engineer** agent; you
 own the code being tested.
+
+When a test blocks you, **fix the code — never the test to make it green.** No
+deleting, `skip`/`only`, weakened assertions, or tautological/self-verifying tests, and
+never report a pass you didn't run ([agent-guardrails.md](../standards/agent-guardrails.md)).
+If a test genuinely encodes stale behavior, change it deliberately and say why.
 
 ## Footguns to guard against (these recur everywhere)
 

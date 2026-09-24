@@ -28,7 +28,7 @@ Start with [`standards/README.md`](./standards/README.md) — it's the map.
 | **software-architect** | Plans & designs before code exists. Produces developer-ready specs with a mandatory Big-O complexity audit, testing strategy, and CI plan. | opus | ❌ never |
 | **senior-dev** | Implements features, refactors, and bug fixes in the house TypeScript/Next/Node style. Hands large test surfaces to qa-engineer. | (inherits) | ✅ |
 | **code-reviewer** | Read-only review of a diff/branch: correctness bugs first, then secrets/security, house-convention violations, SOLID/complexity. Verifies by running typecheck/tests. | opus | ❌ reports only |
-| **qa-engineer** | Owns testing end-to-end: drives TDD (red→green→refactor), designs strategy & writes the tests (Vitest+coverage+BDD+Stryker / pytest / cargo), validates seed/fixture data & DB coherence, hunts edge cases, verifies by running the real toolchain. | opus | ✅ (tests) |
+| **qa-engineer** | Owns testing end-to-end: designs strategy & writes the tests (Vitest+coverage+BDD+Stryker / pytest / cargo), uses mutation testing as the real regression signal, keeps AI-written tests honest (no faked red / tautological / weaken-to-green — [agent-guardrails](./standards/agent-guardrails.md)), validates seed/fixture data & DB coherence, hunts edge cases, verifies by running the real toolchain. TDD where it pays. | opus | ✅ (tests) |
 | **product-designer** | Standalone specialist: owns the look & feel — distinctive, non-"AI-slop" visual identity, design tokens/systems, type & color & motion, both themes. Verifies the rendered UI and implements the visual layer in Tailwind. | opus | ✅ (styling) |
 | **ux-engineer** | Standalone specialist: interaction/IA, user journeys + **mobile-first responsive** & **accessibility** (WCAG). Verifies real layouts across 375/768/1024 breakpoints, fixes overflow/tap-target/contrast/focus bugs in Tailwind/React. | sonnet | ✅ |
 | **seo-geo** | Standalone specialist: audits & improves both **SEO** (organic search) and **GEO** (getting cited by ChatGPT/Claude/Gemini/Perplexity) — intent titles + metadata, JSON-LD, sitemaps + indexing, OG images, llms.txt, AI-crawler access. Checks the live site, then implements. | opus | ✅ |
@@ -50,8 +50,13 @@ restated in each agent. The headlines:
   Express 5 / Fastify + Prisma/Drizzle over PostgreSQL (back); Expo/React Native
   (mobile); Python on **uv**; Rust/cargo. **npm** for JS (never yarn/pnpm).
 - **Quality gate:** run the project's *real* typecheck; gold ladder is typecheck →
-  coverage ≥95% → Cucumber BDD (es-CL) → API integration → Stryker ≥85%. Test the
-  *real* behavior, not just the pure helper. → [testing.md](./standards/testing.md)
+  coverage ≥95% → Cucumber BDD (es-CL) → API integration → Stryker ≥85% (mutation score
+  is the real regression signal, not line coverage). Test the *real* behavior, not just
+  the pure helper. TDD is a tool, not a mandate — design up front, then test. →
+  [testing.md](./standards/testing.md)
+- **Test honesty:** AI-written tests are kept honest by explicit guardrails — no faked
+  red, no tautological/self-verifying tests, no weaken-to-green; the human reads *why* a
+  test went red. → [agent-guardrails.md](./standards/agent-guardrails.md)
 - **Deploy:** push to main → CI/CD; never manual by hand. Container → managed runtime
   via federated CI auth; IaC for reproducible infra; scale to zero. →
   [cloud.md](./standards/cloud.md)

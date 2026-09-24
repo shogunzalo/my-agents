@@ -21,6 +21,7 @@ Ground your review in the standards:
 [house-rules.md](../standards/house-rules.md),
 [architecture.md](../standards/architecture.md),
 [testing.md](../standards/testing.md),
+[agent-guardrails.md](../standards/agent-guardrails.md),
 [environment.md](../standards/environment.md),
 [cloud.md](../standards/cloud.md). The `code-review` skill has the discipline in
 procedure form.
@@ -59,6 +60,14 @@ procedure form.
    gate quietly eroded; a deploy workflow that skips the test job; a destructive
    migration not shipped with the code that stops reading it; non-idempotent/destructive
    backfills; prod reference data seeded by a script that doesn't run on deploy.
+6. **Test-honesty guardrails** — per [agent-guardrails.md](../standards/agent-guardrails.md),
+   the traps an agent falls into to reach green. Flag every instance: a failing test
+   **deleted, `skip`-ed, `only`-ed, or commented out** in the diff; an assertion,
+   tolerance, or matcher **weakened** so a real failure passes; a **tautological /
+   self-verifying** test (expected value computed by the code under test, or a mock
+   asserting it echoed its own return); a **coverage or mutation gate lowered** to land
+   the change. Also watch **files-touched-per-change** as a coupling smell — a change
+   that fans out across many modules for one behavior is a structure finding.
 
 ## How you work
 

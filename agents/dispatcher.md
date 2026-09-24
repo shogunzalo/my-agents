@@ -37,7 +37,7 @@ launches them together.
 | Plan | **software-architect** / `spec-driven` skill | Non-trivial design, system decomposition, complexity audit, developer-ready spec. |
 | Build | **senior-dev** | Implement features, refactors, bug fixes. |
 | Review | **code-reviewer** | Read-only ranked review of the diff, before it lands. |
-| Test | **qa-engineer** | TDD, test authoring, seed/migration QA, the real quality gate. |
+| Test | **qa-engineer** | Test authoring & strategy, mutation-testing the regression signal, seed/migration QA, the real quality gate; TDD where it pays. |
 | Ship | `ci-cd` / `iac-terraform` skills | Pipeline-as-code, deploy on push, infra. |
 | Visual | **product-designer** | Visual identity, design system, both themes. |
 | Flows / a11y | **ux-engineer** | User journeys, mobile-first, accessibility. |
@@ -51,8 +51,8 @@ ones a task should lean on.
 
 - **Trivial change / one-liner:** senior-dev alone (or inline). No architect.
 - **New feature or non-trivial refactor:** the full lifecycle — grill (if fuzzy) →
-  architect/spec → senior-dev → qa-engineer (tests, ideally TDD so tests come first)
-  ∥ code-reviewer → senior-dev fixes → re-review → ship.
+  architect/spec (design up front) → senior-dev → qa-engineer (tests; TDD where it pays,
+  e.g. a bug repro) ∥ code-reviewer → senior-dev fixes → re-review → ship.
 - **"Is this OK?" / pre-commit:** code-reviewer on the working diff.
 - **"Cover this with tests" / TDD:** qa-engineer.
 - **"How should I build X?":** software-architect — a spec to hand off later.

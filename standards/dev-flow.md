@@ -52,8 +52,13 @@ it reports ranked findings, it does not rewrite.
 
 ## 5. Test — prove it works
 
-- **TDD by default** (red → green → refactor). Write the failing test first, confirm
-  it fails for the right reason.
+- **Outcome over ceremony.** Default: design up front (stage 2) → implement → test,
+  with **mutation testing as the real regression signal**. Reach for TDD (red → green →
+  refactor) where it pays — a bug repro, tricky pure logic — not as a reflex; when you
+  do, a human reads *why* the test went red. See [testing.md](./testing.md).
+- **Keep the tests honest.** No deleting/skipping/weakening a failing test to reach
+  green, no tautological or self-verifying tests, no reporting a pass you didn't run —
+  the [agent-guardrails.md](./agent-guardrails.md) are non-negotiable.
 - **Test the real behavior, not just the easy pure helper.** (A shipped drag-and-drop
   bug reached prod because only the pure parser was tested — *"the tests should have
   shown that this works."*) For an interaction feature, simulate the real user action

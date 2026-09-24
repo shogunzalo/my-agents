@@ -23,7 +23,7 @@ anything lands.
                               ▼                          ▼
                      ┌───────────────┐          ┌──────────────┐
                      │ qa-engineer   │          │ code-reviewer│  Test ∥ Review
-                     │ (TDD + gate)  │          │ (read-only)  │
+                     │ (tests + gate)│          │ (read-only)  │
                      └──────┬────────┘          └──────┬───────┘
                             └───────────┬──────────────┘
                                         │ findings
@@ -70,7 +70,7 @@ A recipe you can paste into a session (adapt the target):
 3. **Implement.** `@senior-dev implement tasks 1–3 from the spec above.` → code, with
    the real typecheck run and reported.
 4. **Test + review in parallel** (one message, so they run concurrently):
-   - `@qa-engineer add tests for the new module — TDD where it fits, match the repo's tier.`
+   - `@qa-engineer add tests for the new module — match the repo's tier, TDD where it pays (e.g. a bug repro), and check the mutation score. Keep them honest (agent-guardrails).`
    - `@code-reviewer review the working diff. Correctness first, then secrets and house conventions.`
 5. **Fix.** Feed the review findings to `@senior-dev`. Re-review if the changes were
    substantial.

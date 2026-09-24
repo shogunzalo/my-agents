@@ -1,7 +1,10 @@
 # Testing — proving it works
 
 Tests exist to prove the behavior the user actually invokes — not to decorate the
-pure helper that was easy to test. Pro-tests, pro-TDD.
+pure helper that was easy to test. Pro-tests; **outcome over ceremony.** The signal
+that matters is whether a test could catch a real bug, so a green suite an agent
+produced counts for nothing until that's established — see
+[agent-guardrails.md](./agent-guardrails.md), which keeps AI-written tests honest.
 
 ## The core rule: test the real behavior
 
@@ -31,15 +34,27 @@ over in-memory substitute over DB mock.
   avoid tautological or implementation-coupled tests that pass even when the feature
   is broken.
 
-## TDD (red → green → refactor)
+## TDD — a tool, not the default
+
+The default for non-trivial work is **design up front, then implement, then test**
+(the `software-architect` decides architecture, contracts, and edge cases before code
+— upfront design correlates with better outcomes than design that emerges one test at
+a time in an agent loop). Reach for test-first where it genuinely pays — reproducing a
+bug before the fix, pinning tricky pure logic, a contract you can state as a test — not
+as a reflex on every change. An agent running the full red→green→refactor loop
+unsupervised costs several times the tokens for no clear quality edge, and tends to
+fake the red step, overshoot the test, or write tautological tests
+([agent-guardrails.md](./agent-guardrails.md)).
+
+When you do run it:
 
 1. **Red:** write the smallest failing test for the next behavior; confirm it fails
-   *for the right reason*.
-2. **Green:** minimal implementation to pass.
+   *for the right reason* — and have a human read *why* it went red, because that's the
+   only thing the red actually proves.
+2. **Green:** minimal implementation to pass. No overshoot beyond the current test.
 3. **Refactor:** clean up with the test as a safety net.
 
-Show the red → green transition in the report. One vertical slice at a time. The
-`tdd` skill in `skills/` executes this loop.
+One vertical slice at a time; the `tdd` skill in `skills/` executes this loop.
 
 ## The quality ladder
 
@@ -53,7 +68,15 @@ every rung, but **leave every repo at least one tier better** than you found it.
 3. **BDD** — Cucumber, with scenarios in the product's locale for top-tier repos.
 4. **API integration** — Vitest + supertest against a real running server.
 5. **Mutation** — Stryker (≥85% on top-tier repos) to prove the tests actually catch
-   bugs, not just execute lines.
+   bugs, not just execute lines. This is the **primary regression-quality signal**:
+   prefer monitoring and improving the mutation score over prescribing elaborate TDD
+   ceremony and hoping the tests bite. High line-coverage with a low mutation score is
+   coverage theater ([agent-guardrails.md](./agent-guardrails.md)).
+
+**Refactor by review, not by loop.** Don't trust an incremental TDD loop to keep the
+design clean on its own. Give the agent static analysis, run periodic reviews of
+structure and modularity, and watch the **number of files touched per change** as a
+coupling smell — the `code-reviewer` flags these.
 
 ## Per-language toolchains
 
@@ -92,6 +115,7 @@ not memory.
 
 ## Related
 
+- [agent-guardrails.md](./agent-guardrails.md) (keeping AI-written tests honest) ·
 - [dev-flow.md](./dev-flow.md) (TDD in the lifecycle) ·
   [architecture.md](./architecture.md) (deterministic core, fitness functions) ·
   [environment.md](./environment.md) (right runtime, real gate).

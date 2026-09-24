@@ -15,9 +15,10 @@ structured and predictable instead of "vibe-coded."
 | File | Covers |
 |------|--------|
 | [house-rules.md](./house-rules.md) | Non-negotiables: language (es-CL, no Argentinisms), npm-only, no emojis, strict TS, dark-mode-first, git safety, communication style. |
-| [dev-flow.md](./dev-flow.md) | The lifecycle: Think → Plan → Build → Review → Test → Ship → Reflect. Spec-driven development, TDD default, commit & branch strategy, pre-commit gate, CI/CD trigger. |
+| [dev-flow.md](./dev-flow.md) | The lifecycle: Think → Plan → Build → Review → Test → Ship → Reflect. Spec-driven development, design-up-front then test, commit & branch strategy, pre-commit gate, CI/CD trigger. |
 | [architecture.md](./architecture.md) | Clean/hexagonal (ports & adapters), SOLID, DDD, deep modules, folder structure, design patterns, fitness functions, visual system. |
-| [testing.md](./testing.md) | Test pyramid, real-behavior rule, TDD, the quality ladder (typecheck → coverage → BDD → integration → mutation), per-language toolchains, performance testing. |
+| [testing.md](./testing.md) | Test pyramid, real-behavior rule, TDD-as-a-tool, the quality ladder (typecheck → coverage → BDD → integration → mutation), per-language toolchains, performance testing. |
+| [agent-guardrails.md](./agent-guardrails.md) | Keeping AI-written tests honest: the failure modes (faked red, overshoot, tautological/self-verifying tests, weaken-to-green, coverage theater), banned moves, mutation testing as the real signal, and the human checkpoints that don't automate away. |
 | [environment.md](./environment.md) | Portable environment discipline: detect the runtime, verify a tool exists before using it, confirm browser tooling launches, check module format — don't assume. Machine specifics go in a local override. |
 | [cloud.md](./cloud.md) | Deploy topology (Cloud Run / GCP), CI/CD-on-push, IaC / Terraform, GCP cost-consciousness. |
 
